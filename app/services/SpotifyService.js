@@ -15,16 +15,35 @@ require("rxjs/add/operator/map");
 var SpotifyService = (function () {
     function SpotifyService(_http) {
         this._http = _http;
+        this.clientId = "363d1d75159a4abfa84f7fdd0da255b4";
     }
+    Object.defineProperty(SpotifyService.prototype, "AccessToken", {
+        get: function () {
+            return this.accessToken;
+        },
+        set: function (value) {
+            this.accessToken = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
     SpotifyService.prototype.getArtist = function (id) {
         this.artistUrl = 'https://api.spotify.com/v1/artists/' + id;
         return this._http.get(this.artistUrl, this.getHeaders()).map(function (res) { return res.json(); });
     };
-    SpotifyService.prototype.getHeaders = function () {
+    SpotifyService.prototype.requestAuthorization = function () {
         var headers = new http_1.Headers();
-        var authToken = 'BQAX0LoywYzRSWNpKEzfZiOC8HdYkGPfsWFeuijVLpCVrFZ1MaT5JT-i42S03xfTPtTrmORHfURic8oKu98XoidQyui9TF205AKUdyNLKBiDouI7Zi0uR-ah7u9LVHA1gbgCqKYZOaUetbSLlV5SlScB6kjVlg';
         headers.append('Content-Type', 'application/json');
-        headers.append('Authorization', 'Bearer ' + authToken);
+        var requestUrl = "https://accounts.spotify.com/authorize?client_id=" + this.clientId + "&redirect_uri=http:%2F%2Flocalhost:3000&scope=user-read-private%20user-read-email&response_type=token&state=123";
+        window.location.href = requestUrl;
+    };
+    SpotifyService.prototype.getHeaders = function () {
+        if (!this.accessToken) {
+            this.requestAuthorization();
+        }
+        var headers = new http_1.Headers();
+        headers.append('Content-Type', 'application/json');
+        headers.append('Authorization', 'Bearer ' + this.accessToken);
         return new http_1.RequestOptions({ headers: headers });
     };
     SpotifyService.prototype.searchMusic = function (str, type) {
