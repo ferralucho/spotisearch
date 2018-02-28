@@ -11,14 +11,28 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var core_1 = require("@angular/core");
 var SpotifyService_1 = require("../../services/SpotifyService");
+var router_1 = require("@angular/router");
 var SearchComponent = (function () {
-    function SearchComponent(_spotifyService) {
-        this._spotifyService = _spotifyService;
+    function SearchComponent(spotifyService, route) {
+        var _this = this;
+        this.spotifyService = spotifyService;
+        this.route = route;
         this.searchRes = [];
+        this.route.fragment.subscribe(function (fragment) {
+            if (fragment) {
+                var token = fragment.match(/^(.*?)&/)[1].replace('access_token=', '');
+                _this.spotifyService.AccessToken = token;
+                if (!token) {
+                    _this.spotifyService.requestAuthorization();
+                }
+            }
+        });
     }
+    SearchComponent.prototype.ngOnInit = function () {
+    };
     SearchComponent.prototype.searchMusic = function () {
         var _this = this;
-        this._spotifyService.searchMusic(this.searchStr).subscribe(function (res) {
+        this.spotifyService.searchMusic(this.searchStr).subscribe(function (res) {
             _this.searchRes = res.artists.items;
         });
     };
@@ -28,7 +42,7 @@ var SearchComponent = (function () {
             selector: 'search',
             templateUrl: 'search.component.html'
         }),
-        __metadata("design:paramtypes", [SpotifyService_1.SpotifyService])
+        __metadata("design:paramtypes", [SpotifyService_1.SpotifyService, router_1.ActivatedRoute])
     ], SearchComponent);
     return SearchComponent;
 }());
